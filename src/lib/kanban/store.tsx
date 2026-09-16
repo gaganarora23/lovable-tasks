@@ -62,7 +62,7 @@ function loadState(): KanbanState {
     tasks: seedTasks,
     members: seedMembers,
     labels: seedLabels,
-    activeProjectId: seedProjects[0].id,
+    activeProjectId: seedProjects[0]?.id ?? "p-atlas",
   };
   if (typeof window === "undefined") return fallback;
   try {
@@ -96,9 +96,10 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   }, [state, hydrated]);
 
   const value = useMemo<KanbanContextValue>(() => {
-    const activeProject =
-      state.projects.find((p) => p.id === state.activeProjectId) ??
-      state.projects[0];
+      const first = state.projects[0];
+      const activeProject: Project =
+        state.projects.find((p) => p.id === state.activeProjectId) ??
+        first ?? { id: "p-fallback", name: "Project", color: "#2f5bff" };
 
     return {
       ...state,
@@ -150,9 +151,11 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
           } else {
             // append after the last task of the target column in this project
             for (let i = without.length - 1; i >= 0; i--) {
+              const t = without[i];
               if (
-                without[i].projectId === task.projectId &&
-                without[i].status === status
+                t &&
+                t.projectId === task.projectId &&
+                t.status === status
               ) {
                 insertAt = i + 1;
                 break;
@@ -170,18 +173,19 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
       },
       addMember: (name) =>
         setState((s) => {
-          const initials = name
-            .split(/\s+/)
-            .map((w) => w[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase();
+          const initials =
+            name
+              .split(/\s+/)
+              .map((w) => w[0] ?? "")
+              .join("")
+              .slice(0, 2)
+              .toUpperCase() || "?";
           const colors = ["#2f5bff", "#16b364", "#b34bff", "#0ea5b7"];
           const member: Member = {
             id: uid("m"),
             name,
             initials,
-            color: colors[s.members.length % colors.length],
+            color: colors[s.members.length % colors.length] ?? "#2f5bff",
           };
           return { ...s, members: [...s.members, member] };
         }),
