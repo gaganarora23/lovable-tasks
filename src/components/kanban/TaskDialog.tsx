@@ -77,10 +77,11 @@ export function TaskDialog({
   const save = () => {
     const trimmed = title.trim();
     if (!trimmed) return;
+    const desc = description.trim();
     const payload = {
       projectId: activeProject.id,
       title: trimmed,
-      description: description.trim() || undefined,
+      ...(desc ? { description: desc } : {}),
       status,
       priority,
       labelIds,
