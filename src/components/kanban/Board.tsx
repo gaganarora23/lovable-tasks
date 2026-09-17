@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useKanban } from "@/lib/kanban/store";
 import { COLUMNS, type ColumnDef, type Status, type Task } from "@/lib/kanban/types";
 import { cn } from "@/lib/utils";
@@ -120,6 +120,8 @@ export function Board({
 }) {
   const { activeProject, columnTasks, moveTask, projectTasks } = useKanban();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -166,6 +168,14 @@ export function Board({
 
   return (
     <div className="flex-1 overflow-x-auto">
+      {!mounted ? (
+        <div className="flex min-h-full items-start gap-4 p-6">
+          {COLUMNS.map((col) => (
+            <section key={col.id} className="w-[300px] shrink-0" />
+          ))}
+        </div>
+      ) : null}
+      {mounted ? (
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -189,6 +199,7 @@ export function Board({
           {activeTask ? <TaskCard task={activeTask} dragging /> : null}
         </DragOverlay>
       </DndContext>
+      ) : null}
     </div>
   );
 }
