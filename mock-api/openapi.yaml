@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: Kanvas Kanban API
+  description: Mock backend contract for the Kanvas mini kanban board. Implement these endpoints in FastAPI (or run this spec through a mock server) and the frontend store can be swapped over with no UI changes.
+  version: 1.0.0
+  contact:
+    name: Kanvas Team
+servers:
+  - url: http://localhost:3001
+    description: Local mock server
+
+tags:
+  - name: Projects
+  - name: Tasks
+  - name: Labels
+  - name: Members
+
+paths:
+  /projects:
+    get:
+      summary: List all projects
+      tags: [Projects]
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      summary: Create a project
+      tags: [Projects]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, color]
+              properties:
+                name: { type: string, example: "Atlas Redesign" }
+                color: { type: string, example: "#2f5bff" }
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{projectId}/tasks:
+    get:
+      summary: List tasks for a project
+      tags: [Tasks]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tasks for the project
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+  /tasks:
+    post:
+      summary: Create a task
+      tags: [Tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreate"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{taskId}:
+    patch:
+      summary: Update a task
+      tags: [Tasks]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      summary: Delete a task
+      tags: [Tasks]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  /tasks/{taskId}/move:
+    post:
+      summary: Move or reorder a task
+      description: Move a task to a different column and/or position it before another task. Omit beforeTaskId to append to the end of the target column.
+      tags: [Tasks]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskMove"
+      responses:
+        "200":
+          description: Moved task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /labels:
+    get:
+      summary: List all labels
+      tags: [Labels]
+      responses:
+        "200":
+          description: List of labels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Label"
+    post:
+      summary: Create a label
+      tags: [Labels]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, color]
+              properties:
+                name: { type: string, example: "Bug" }
+                color: { type: string, example: "#ff7a1a" }
+      responses:
+        "201":
+          description: Created label
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Label"
+
+  /members:
+    get:
+      summary: List all members
+      tags: [Members]
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Member"
+    post:
+      summary: Create a member
+      tags: [Members]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: "Marc O." }
+      responses:
+        "201":
+          description: Created member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+
+components:
+  schemas:
+    Project:
+      type: object
+      required: [id, name, color]
+      properties:
+        id: { type: string, example: "p-atlas" }
+        name: { type: string, example: "Atlas Redesign" }
+        color: { type: string, example: "#2f5bff" }
+
+    Task:
+      type: object
+      required: [id, projectId, title, status, priority, labelIds, assigneeId, createdAt]
+      properties:
+        id: { type: string, example: "t-1" }
+        projectId: { type: string, example: "p-atlas" }
+        title: { type: string, example: "Audit legacy icon set" }
+        description: { type: string, nullable: true, example: "Repro steps..." }
+        status:
+          type: string
+          enum: [parked, todo, in_progress, complete]
+          example: "todo"
+        priority:
+          type: string
+          nullable: true
+          enum: [P1, P2, P3, P4]
+          example: "P2"
+        labelIds:
+          type: array
+          items: { type: string }
+          example: ["l-bug", "l-mobile"]
+        assigneeId:
+          type: string
+          nullable: true
+          example: "m-marc"
+        due:
+          type: string
+          nullable: true
+          example: "Today"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-09-10T00:00:00.000Z"
+
+    TaskCreate:
+      type: object
+      required: [projectId, title, status]
+      properties:
+        projectId: { type: string, example: "p-atlas" }
+        title: { type: string, example: "New task" }
+        description: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [parked, todo, in_progress, complete]
+          example: "todo"
+        priority:
+          type: string
+          nullable: true
+          enum: [P1, P2, P3, P4]
+        labelIds:
+          type: array
+          items: { type: string }
+        assigneeId:
+          type: string
+          nullable: true
+
+    TaskUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [parked, todo, in_progress, complete]
+        priority:
+          type: string
+          nullable: true
+          enum: [P1, P2, P3, P4]
+        labelIds:
+          type: array
+          items: { type: string }
+        assigneeId:
+          type: string
+          nullable: true
+
+    TaskMove:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [parked, todo, in_progress, complete]
+          example: "in_progress"
+        beforeTaskId:
+          type: string
+          nullable: true
+          description: ID of the task to insert before. Null appends to the end of the column.
+
+    Label:
+      type: object
+      required: [id, name, color]
+      properties:
+        id: { type: string, example: "l-bug" }
+        name: { type: string, example: "Bug" }
+        color: { type: string, example: "#ff7a1a" }
+
+    Member:
+      type: object
+      required: [id, name, initials, color]
+      properties:
+        id: { type: string, example: "m-marc" }
+        name: { type: string, example: "Marc O." }
+        initials: { type: string, example: "MO" }
+        color: { type: string, example: "#2f5bff" }
+        isYou: { type: boolean, example: false }
