@@ -69,8 +69,9 @@ export function TaskDialog({
     const name = newLabel.trim();
     if (!name) return;
     const color = LABEL_PALETTE[labels.length % LABEL_PALETTE.length] ?? "#6b6b66";
-    const label = addLabel(name, color);
-    setLabelIds((ids) => [...ids, label.id]);
+    void addLabel(name, color).then((label) => {
+      setLabelIds((ids) => [...ids, label.id]);
+    });
     setNewLabel("");
   };
 
