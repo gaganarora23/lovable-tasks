@@ -199,6 +199,7 @@ export function Board({
           {activeTask ? <TaskCard task={activeTask} dragging /> : null}
         </DragOverlay>
       </DndContext>
+      ) : null}
     </div>
   );
 }
