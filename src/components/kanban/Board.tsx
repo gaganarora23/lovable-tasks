@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useKanban } from "@/lib/kanban/store";
 import { COLUMNS, type ColumnDef, type Status, type Task } from "@/lib/kanban/types";
 import { cn } from "@/lib/utils";
