@@ -120,6 +120,8 @@ export function Board({
 }) {
   const { activeProject, columnTasks, moveTask, projectTasks } = useKanban();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
