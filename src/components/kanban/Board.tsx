@@ -168,6 +168,14 @@ export function Board({
 
   return (
     <div className="flex-1 overflow-x-auto">
+      {!mounted ? (
+        <div className="flex min-h-full items-start gap-4 p-6">
+          {COLUMNS.map((col) => (
+            <section key={col.id} className="w-[300px] shrink-0" />
+          ))}
+        </div>
+      ) : null}
+      {mounted ? (
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
